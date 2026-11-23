@@ -719,108 +719,116 @@ def _wrap_nepali_text(text, max_chars=45):
     
     return lines
 
+# async def generate_pdf(content, dtype, data):
+#     out = os.path.join(BASE_DIR, "generated_documents")
+#     os.makedirs(out, exist_ok=True)
+#     fpath = os.path.join(out, f"{dtype}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
+    
+#     c = canvas.Canvas(fpath, pagesize=A4)
+#     w, h = A4
+#     font = _ensure_font()
+    
+#     # A4: 595.27 x 841.89 points (72 points/inch)
+#     # Standard margins: 1 inch = 72 points
+#     margin_left = 72
+#     margin_right = 72
+#     margin_top = 72
+#     margin_bottom = 72
+#     usable_width = w - margin_left - margin_right
+#     line_height = 16  # Line height for 11pt font
+    
+#     # Header Section
+#     y = h - margin_top
+    
+#     c.setFont(font, 14)
+#     c.drawCentredString(w/2, y, "नेपाल सरकार")
+#     y -= 22
+    
+#     c.setFont(font, 16)
+#     municipality = str(data.get('municipality', 'स्थानीय तह'))
+#     c.drawCentredString(w/2, y, municipality)
+#     y -= 18
+    
+#     c.setFont(font, 11)
+#     if data.get('district') and data.get('province'): 
+#         c.drawCentredString(w/2, y, f"{data['district']}, {data['province']}")
+#         y -= 15
+#     if data.get('ward'): 
+#         c.drawCentredString(w/2, y, f"वडा नं. {data['ward']} को कार्यालय")
+#         y -= 15
+    
+#     # Horizontal line
+#     y -= 5
+#     c.line(margin_left, y, w - margin_right, y)
+#     y -= 20
+    
+#     # Date (right aligned)
+#     c.setFont(font, 10)
+#     date_text = f"मिति: {convert_to_bikram_sambat(datetime.now().strftime('%Y-%m-%d'))}"
+#     c.drawRightString(w - margin_right, y, date_text)
+#     y -= 20
+    
+#     # Subject
+#     c.setFont(font, 12)
+#     subject_map = {
+#         'birth_registration': 'जन्म दर्ता निवेदन',
+#         'death_registration': 'मृत्यु दर्ता निवेदन',
+#         'marriage_registration': 'विवाह दर्ता निवेदन',
+#         'divorce_registration': 'सम्बन्ध विच्छेद निवेदन',
+#         'electricity_connection': 'विद्युत जडान निवेदन',
+#         'water_connection': 'खानेपानी जडान निवेदन',
+#         'migration_certificate': 'बसाइसराई प्रमाणपत्र निवेदन',
+#         'residence_certificate': 'बसोबास प्रमाणपत्र निवेदन',
+#         'road_access': 'बाटो निकासा निवेदन'
+#     }
+#     subject = subject_map.get(dtype, dtype.replace('_', ' ').title())
+#     c.drawString(margin_left, y, f"विषय: {subject}")
+#     y -= 25
+    
+#     # Body content
+#     c.setFont(font, 11)
+#     wrapped_lines = _wrap_nepali_text(content, max_chars=50)
+    
+#     for line in wrapped_lines:
+#         # Check if we need a new page
+#         if y < margin_bottom + 100:  # Leave room for footer
+#             c.showPage()
+#             c.setFont(font, 11)
+#             y = h - margin_top
+        
+#         c.drawString(margin_left, y, line)
+#         y -= line_height
+        
+#         # Extra space after empty lines (paragraph breaks)
+#         if not line.strip():
+#             y -= 8
+    
+#     # Footer section - ensure enough space
+#     footer_space_needed = 80
+#     if y < margin_bottom + footer_space_needed:
+#         c.showPage()
+#         c.setFont(font, 11)
+#         y = h - margin_top - 50
+    
+#     y = max(y - 30, margin_bottom + 60)
+    
+#     # Signature lines
+#     c.drawString(margin_left, y, "..................")
+#     c.drawString(margin_left, y - 15, "निवेदक")
+    
+#     c.drawRightString(w - margin_right, y, "..................")
+#     c.drawRightString(w - margin_right, y - 15, "अधिकृत")
+    
+#     c.save()
+#     return fpath
 async def generate_pdf(content, dtype, data):
+    from pdf_render import render_pdf
     out = os.path.join(BASE_DIR, "generated_documents")
     os.makedirs(out, exist_ok=True)
-    fpath = os.path.join(out, f"{dtype}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
-    
-    c = canvas.Canvas(fpath, pagesize=A4)
-    w, h = A4
-    font = _ensure_font()
-    
-    # A4: 595.27 x 841.89 points (72 points/inch)
-    # Standard margins: 1 inch = 72 points
-    margin_left = 72
-    margin_right = 72
-    margin_top = 72
-    margin_bottom = 72
-    usable_width = w - margin_left - margin_right
-    line_height = 16  # Line height for 11pt font
-    
-    # Header Section
-    y = h - margin_top
-    
-    c.setFont(font, 14)
-    c.drawCentredString(w/2, y, "नेपाल सरकार")
-    y -= 22
-    
-    c.setFont(font, 16)
-    municipality = str(data.get('municipality', 'स्थानीय तह'))
-    c.drawCentredString(w/2, y, municipality)
-    y -= 18
-    
-    c.setFont(font, 11)
-    if data.get('district') and data.get('province'): 
-        c.drawCentredString(w/2, y, f"{data['district']}, {data['province']}")
-        y -= 15
-    if data.get('ward'): 
-        c.drawCentredString(w/2, y, f"वडा नं. {data['ward']} को कार्यालय")
-        y -= 15
-    
-    # Horizontal line
-    y -= 5
-    c.line(margin_left, y, w - margin_right, y)
-    y -= 20
-    
-    # Date (right aligned)
-    c.setFont(font, 10)
-    date_text = f"मिति: {convert_to_bikram_sambat(datetime.now().strftime('%Y-%m-%d'))}"
-    c.drawRightString(w - margin_right, y, date_text)
-    y -= 20
-    
-    # Subject
-    c.setFont(font, 12)
-    subject_map = {
-        'birth_registration': 'जन्म दर्ता निवेदन',
-        'death_registration': 'मृत्यु दर्ता निवेदन',
-        'marriage_registration': 'विवाह दर्ता निवेदन',
-        'divorce_registration': 'सम्बन्ध विच्छेद निवेदन',
-        'electricity_connection': 'विद्युत जडान निवेदन',
-        'water_connection': 'खानेपानी जडान निवेदन',
-        'migration_certificate': 'बसाइसराई प्रमाणपत्र निवेदन',
-        'residence_certificate': 'बसोबास प्रमाणपत्र निवेदन',
-        'road_access': 'बाटो निकासा निवेदन'
-    }
-    subject = subject_map.get(dtype, dtype.replace('_', ' ').title())
-    c.drawString(margin_left, y, f"विषय: {subject}")
-    y -= 25
-    
-    # Body content
-    c.setFont(font, 11)
-    wrapped_lines = _wrap_nepali_text(content, max_chars=50)
-    
-    for line in wrapped_lines:
-        # Check if we need a new page
-        if y < margin_bottom + 100:  # Leave room for footer
-            c.showPage()
-            c.setFont(font, 11)
-            y = h - margin_top
-        
-        c.drawString(margin_left, y, line)
-        y -= line_height
-        
-        # Extra space after empty lines (paragraph breaks)
-        if not line.strip():
-            y -= 8
-    
-    # Footer section - ensure enough space
-    footer_space_needed = 80
-    if y < margin_bottom + footer_space_needed:
-        c.showPage()
-        c.setFont(font, 11)
-        y = h - margin_top - 50
-    
-    y = max(y - 30, margin_bottom + 60)
-    
-    # Signature lines
-    c.drawString(margin_left, y, "..................")
-    c.drawString(margin_left, y - 15, "निवेदक")
-    
-    c.drawRightString(w - margin_right, y, "..................")
-    c.drawRightString(w - margin_right, y - 15, "अधिकृत")
-    
-    c.save()
-    return fpath
+    now = datetime.now()
+    fpath = os.path.join(out, f"{dtype}_{now.strftime('%Y%m%d_%H%M%S')}.pdf")
+    date_bs = convert_to_bikram_sambat(now.strftime("%Y-%m-%d"))
+    return render_pdf(content, dtype, data, date_bs, fpath)
 
 @app.get("/locations")
 def locations():
