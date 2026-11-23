@@ -29,28 +29,11 @@ import base64
 
 # Configure FFmpeg path - MUST be before any audio library imports
 def setup_ffmpeg_path():
-    """Setup FFmpeg in PATH for audio processing"""
-    try:
-        import imageio_ffmpeg
-        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
-        ffmpeg_dir = os.path.dirname(ffmpeg_exe)
-        ffmpeg_standard = os.path.join(ffmpeg_dir, "ffmpeg.exe")
-        
-        # Create standard ffmpeg.exe if needed
-        if not os.path.exists(ffmpeg_standard):
-            shutil.copy2(ffmpeg_exe, ffmpeg_standard)
-            print(f"[FFmpeg] Created: {ffmpeg_standard}")
-        
-        # Prepend to PATH
-        current_path = os.environ.get("PATH", "")
-        if ffmpeg_dir not in current_path:
-            os.environ["PATH"] = ffmpeg_dir + os.pathsep + current_path
-        
-        os.environ["FFMPEG_BINARY"] = ffmpeg_standard
-        return ffmpeg_standard
-    except Exception as e:
-        print(f"[FFmpeg] Setup failed: {e}")
-        return None
+    """Use the system ffmpeg (Linux/Mac). Returns its path or None."""
+    path = shutil.which("ffmpeg")
+    if not path:
+        print("[FFmpeg] Not found. Install it: sudo apt install ffmpeg")
+    return path
 
 FFMPEG_PATH = setup_ffmpeg_path()
 
