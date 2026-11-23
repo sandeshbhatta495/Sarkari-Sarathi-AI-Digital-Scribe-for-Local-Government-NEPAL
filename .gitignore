@@ -22,3 +22,9 @@ __pycache__/
 # IDE
 .vscode/
 .idea/
+.venv/
+__pycache__/
+*.wav
+*.pt
+*.bin
+.env
